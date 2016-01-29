@@ -27,15 +27,16 @@ ESP8266WebServer server ( 80 );
 fujitsu_contol fujitsu(AIRCOND_GPIO_PIN);
 airton_control airton(AIRCOND_GPIO_PIN);
 
-OneWire  ds(DS1820_GPIO_PIN);
-DallasTemperature sensors(&ds);
+//OneWire  ds(DS1820_GPIO_PIN);
+//DallasTemperature sensors(&ds);
 
 aircond_control* current_controller = NULL;
 
 float get_temperature()
 {
-  sensors.requestTemperatures(); 
-  return sensors.getTempCByIndex(0);
+  //sensors.requestTemperatures(); 
+  //return sensors.getTempCByIndex(0);
+  return 0.;
 }
 
 void handleNotFound(){
@@ -89,6 +90,7 @@ void handleRoot() {
         retcode |= current_controller->set_ac_mode(MODE_DRY);
       else
         server.send(200, "text/plain", "Argument 'mode' error");
+        return;
     }
 
     if ( server.hasArg("fan") ){
@@ -105,8 +107,10 @@ void handleRoot() {
         retcode |= current_controller->set_fan_mode(FAN_SPEED_QUIET);
       else
         server.send(200, "text/plain", "Argument 'fan' error");
+        return;
     }
-      
+    current_controller->send_data();
+    server.send(200, "text/plain", "OK");
   } else {
     String message = "You must define a valid aircond model\n\n";
     server.send(200, "text/plain", message);
@@ -116,6 +120,7 @@ void handleRoot() {
 
 void setup() {
   WiFi.begin ( ssid, password );
+  Serial.begin(115200);
   Serial.println ( "Warming up WIFI" );
   while ( WiFi.status() != WL_CONNECTED ) {
     delay ( 500 );
@@ -130,7 +135,7 @@ void setup() {
   server.onNotFound(handleNotFound);
   server.begin();
 
-  sensors.begin();
+  //sensors.begin();
 }
 
 void loop() {

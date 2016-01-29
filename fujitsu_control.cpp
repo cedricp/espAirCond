@@ -1,8 +1,9 @@
 /*
- * Fujitsu InfraRed module
- * Based on document from David Abrams
- * Source : https://www.remotecentral.com
- */
+   Fujitsu InfraRed module
+   Based on document from David Abrams
+   Source : https://www.remotecentral.com
+   Other useful source : Kaseikyo56 - http://www.hifi-remote.com/wiki/index.php?title=Kaseikyo
+*/
 
 #include "fujitsu_control.h"
 
@@ -25,6 +26,8 @@
 #define SWING_HORZONTAL 0x02
 #define SWING_BOTH      0x03
 
+#define UNIT_TIME 412
+
 fujitsu_contol::fujitsu_contol(int ir_pin) : aircond_control(ir_pin)
 {
   ir.set_period(38);
@@ -36,7 +39,7 @@ fujitsu_contol::fujitsu_contol(int ir_pin) : aircond_control(ir_pin)
 
 fujitsu_contol::~fujitsu_contol()
 {
-  
+
 }
 
 bool
@@ -51,22 +54,22 @@ fujitsu_contol::set_swing(bool h, bool v)
 bool
 fujitsu_contol::set_fan_mode(fan_mode mode)
 {
-  switch(mode){
-  case FAN_SPEED_AUTO:
-    m_fan_mode = FJTSU_FAN_SPEED_AUTO;
-    break;
-  case FAN_SPEED_LOW:
-    m_fan_mode = FJTSU_FAN_SPEED_LOW;
-    break;
-  case FAN_SPEED_MID:
-    m_fan_mode = FJTSU_FAN_SPEED_MID;
-    break;
-  case FAN_SPEED_HIGH:
-    m_fan_mode = FJTSU_FAN_SPEED_HIGH;
-    break;
-  case FAN_SPEED_QUIET:
-    m_fan_mode = FJTSU_FAN_SPEED_QUIET;
-    break;
+  switch (mode) {
+    case FAN_SPEED_AUTO:
+      m_fan_mode = FJTSU_FAN_SPEED_AUTO;
+      break;
+    case FAN_SPEED_LOW:
+      m_fan_mode = FJTSU_FAN_SPEED_LOW;
+      break;
+    case FAN_SPEED_MID:
+      m_fan_mode = FJTSU_FAN_SPEED_MID;
+      break;
+    case FAN_SPEED_HIGH:
+      m_fan_mode = FJTSU_FAN_SPEED_HIGH;
+      break;
+    case FAN_SPEED_QUIET:
+      m_fan_mode = FJTSU_FAN_SPEED_QUIET;
+      break;
   }
   return true;
 }
@@ -88,7 +91,7 @@ fujitsu_contol::set_temperature(int temp)
 bool
 fujitsu_contol::set_ac_mode(ac_mode mode)
 {
-  switch(mode){
+  switch (mode) {
     case MODE_COOL:
       m_air_mode = FJTSU_AIR_MODE_COOL;
       break;
@@ -117,35 +120,35 @@ fujitsu_contol::set_adress(char adress)
 
 void fujitsu_contol::send_leader()
 {
-  ir.ir_on(3287);
-  ir.ir_off(1630);
+  ir.ir_on(UNIT_TIME*8);
+  ir.ir_off(UNIT_TIME*4);
 }
 
 void fujitsu_contol::send_trailer()
 {
-  ir.ir_on(410);
-  ir.ir_off(8000);
+  ir.ir_on(UNIT_TIME);
+  ir.ir_off(UNIT_TIME*173);
 }
 
 void fujitsu_contol::send_bit_one()
 {
-  ir.ir_on(410);
-  ir.ir_off(410);
+  ir.ir_on(UNIT_TIME);
+  ir.ir_off(UNIT_TIME);
 }
 
 
 void fujitsu_contol::send_bit_zero()
 {
-  ir.ir_on(410);
-  ir.ir_off(1210);
+  ir.ir_on(UNIT_TIME);
+  ir.ir_off(UNIT_TIME*4);
 }
 
 void
 fujitsu_contol::send_byte(char b)
 {
   int i;
-  for (i = 0; i < 8; ++i){
-    if (b & MASK_MSB){
+  for (i = 0; i < 8; ++i) {
+    if (b & MASK_MSB) {
       send_bit_one();
     } else {
       send_bit_zero();
@@ -159,7 +162,7 @@ fujitsu_contol::compute_crc(char *bytes)
 {
   int i;
   int sum = 0;
-  for (i = 7; i < 15; ++i){
+  for (i = 7; i < 15; ++i) {
     sum += bytes[i];
   }
   return 0x100 - (sum & 0xff) ;
@@ -187,14 +190,16 @@ fujitsu_contol::send_data()
   bytes[15] = compute_crc(bytes);
 
   m_power_status = 0;
-  
+
+  noInterrupts();
   send_leader();
 
-  for (i = 0; i < 16; ++i){
+  for (i = 0; i < 16; ++i) {
     send_byte(bytes[i]);
   }
-  
+
   send_trailer();
+  interrupts();
 }
 
 void
@@ -208,13 +213,13 @@ fujitsu_contol::poweroff()
   bytes[4] = 0x10;
   bytes[5] = 0x02;
   bytes[6] = 0xFD;
-  
+
   send_leader();
 
-  for (i = 0; i < 7; ++i){
+  for (i = 0; i < 7; ++i) {
     send_byte(bytes[i]);
   }
-  
+
   send_trailer();
 }
 

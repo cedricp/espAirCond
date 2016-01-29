@@ -113,6 +113,13 @@ airton_control::send_bit_one()
   ir.ir_off(550);
 }
 
+void
+airton_control::send_bit_zero()
+{
+  ir.ir_on(550);
+  ir.ir_off(1450);
+}
+
 bool
 airton_control::set_fan_mode(fan_mode mode)
 {
@@ -133,14 +140,6 @@ airton_control::set_fan_mode(fan_mode mode)
     return false;
   }
   return true;
-}
-
-
-void
-airton_control::send_bit_zero()
-{
-  ir.ir_on(550);
-  ir.ir_off(1450);
 }
 
 void
@@ -189,12 +188,14 @@ airton_control::send_data()
   bytes[13] = 0x00;
   bytes[14] = compute_crc(bytes);
   
+  noInterrupts(); 
   send_leader();
 
   for (i = 0; i < 15; ++i){
     send_byte(bytes[i]);
   }
-  
+
   send_trailer();
+  interrupts();
 }
 
