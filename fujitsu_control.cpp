@@ -127,7 +127,7 @@ void fujitsu_contol::send_leader()
 void fujitsu_contol::send_trailer()
 {
   ir.ir_on(UNIT_TIME);
-  ir.ir_off(UNIT_TIME*173);
+  ir.ir_off(UNIT_TIME*4);
 }
 
 void fujitsu_contol::send_bit_one()
@@ -140,7 +140,7 @@ void fujitsu_contol::send_bit_one()
 void fujitsu_contol::send_bit_zero()
 {
   ir.ir_on(UNIT_TIME);
-  ir.ir_off(UNIT_TIME*4);
+  ir.ir_off(UNIT_TIME*3);
 }
 
 void
