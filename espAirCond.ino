@@ -56,6 +56,8 @@ void handleNotFound(){
 
 void handleRoot() {
   bool retcode = false;
+
+  current_controller = NULL;
   
   if ( server.hasArg("model") ){
     if (server.arg("model") == "airton")
@@ -67,7 +69,6 @@ void handleRoot() {
   if (current_controller != NULL){
 
     if ( server.args() == 0 ){
-      
       server.send(200, "text/plain", current_controller->get_as_json(get_temperature()));
     }
     
