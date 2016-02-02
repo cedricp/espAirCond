@@ -4,7 +4,6 @@
  */
 
 #include "ir_send.h"
-#include <Arduino.h>
 
 ir_send::ir_send(int pin)
 {
@@ -20,25 +19,10 @@ void
 ir_send::set_period(int kHz)
 {
   m_halfPeriod = 500/kHz;
-}
-
-void
-ir_send::ir_on(int time)
-{
-  long beginning = micros();
-  while(micros() - beginning < time){
-    digitalWrite(m_gpiopin, HIGH);
-    delayMicroseconds(m_halfPeriod);
-    digitalWrite(m_gpiopin, LOW);
-    delayMicroseconds(m_halfPeriod);
-  }
-}
-
-void
-ir_send::ir_off(int time)
-{
-  digitalWrite(m_gpiopin, LOW);
-  if (time > 0) delayMicroseconds(time);
+  m_period = 1000/kHz;
+  float ratio = 1000 / 12.5;
+  m_ratio = (unsigned)ratio;
+  m_halfPeriodCount = m_halfPeriod * m_ratio;
 }
 
 void
