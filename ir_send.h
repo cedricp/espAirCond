@@ -21,7 +21,7 @@ public:
   
   inline void ir_on(int time){
     unsigned time0 = get_ticks() + (time * m_ratio);
-    unsigned time1, time2; 
+    register unsigned time1, time2; 
     while(get_ticks() < time0){
       time1 = get_ticks() + m_halfPeriodCount;
       time2 = time1 + m_halfPeriodCount;
@@ -34,13 +34,11 @@ public:
   
   inline void ir_off(int time){
     digitalWrite(m_gpiopin, LOW);
-    unsigned time0 = get_ticks() + (time * m_ratio);
+    register unsigned time0 = get_ticks() + (time * m_ratio);
     while(get_ticks() < time0){}
   }
   
 private:
-  unsigned m_halfPeriod;
-  unsigned m_period;
   unsigned m_halfPeriodCount;
   unsigned m_ratio;
   unsigned m_gpiopin;

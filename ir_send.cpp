@@ -18,11 +18,9 @@ ir_send::~ir_send()
 void
 ir_send::set_period(int kHz)
 {
-  m_halfPeriod = 500/kHz;
-  m_period = 1000/kHz;
   float ratio = 1000 / 12.5;
   m_ratio = (unsigned)ratio;
-  m_halfPeriodCount = m_halfPeriod * m_ratio;
+  m_halfPeriodCount = (500/kHz) * m_ratio;
 }
 
 void
