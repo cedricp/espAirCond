@@ -101,6 +101,19 @@ void handleRoot() {
         server.send(200, "text/plain", "Argument 'fan' error");
       return;
     }
+    if ( server.hasArg("power") ) {
+      String power = server.arg("power");
+      if (power == "on"){
+        current_controller->poweron();
+        server.send(200, "text/plain", "OK");
+        return;
+      }
+      if (power == "off"){
+        current_controller->poweroff();
+        server.send(200, "text/plain", "OK");
+        return;
+      }      
+    }
     current_controller->send_data();
     server.send(200, "text/plain", "OK");
   } else {
