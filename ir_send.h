@@ -19,12 +19,12 @@ public:
   void set_gpio_pin(int pin);
   void set_period(int kHz);
   void ir_on(int time);
-  void ir_on_2(int time);
+  void ir_on_33(int time);
   void ir_off(int time);
   
 private:
-  int m_halfPeriod;
-  int m_periodOver3;
+  unsigned m_halfPeriodCycles;
+  unsigned m_periodOver3Cycles;
   int m_gpiopin;
 };
 

@@ -90,28 +90,28 @@ airton_control::set_ac_mode(ac_mode mode)
 void
 airton_control::send_leader()
 {
-  ir.ir_on_2(8100);
+  ir.ir_on_33(8100);
   ir.ir_off(4000);
 }
 
 void
 airton_control::send_trailer()
 {
-  ir.ir_on_2(550);
+  ir.ir_on_33(550);
   ir.ir_off(5000);
-}
-
-void
-airton_control::send_bit_one()
-{
-  ir.ir_on_2(550);
-  ir.ir_off(550);
 }
 
 void
 airton_control::send_bit_zero()
 {
-  ir.ir_on_2(550);
+  ir.ir_on_33(550);
+  ir.ir_off(550);
+}
+
+void
+airton_control::send_bit_one()
+{
+  ir.ir_on_33(550);
   ir.ir_off(1450);
 }
 

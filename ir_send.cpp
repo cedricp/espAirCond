@@ -4,6 +4,8 @@
  */
 
 #include "ir_send.h"
+// 80 cycles = 1 ms (1000ns / 12.5ns)
+#define CYCLES_USEC 80
 
 ir_send::ir_send(int pin)
 {
@@ -18,39 +20,49 @@ ir_send::~ir_send()
 void
 ir_send::set_period(int kHz)
 {
-  m_halfPeriod = 500/kHz;
-  m_periodOver3 = (m_halfPeriod * 2) / 3;
+  // period in cycles
+  float periodcylces = (1000.f / (float)kHz) * 80.f;
+  
+  m_halfPeriodCycles = periodcylces / 2.0f;
+  m_periodOver3Cycles = periodcylces / 3.0f;
 }
 
+// 50% duty cycle
 void
 ir_send::ir_on(int time)
 {
-  long beginning = micros();
-  while((micros() - beginning) < time){
+  unsigned loopstop = get_ticks() + (time * CYCLES_USEC);
+  while(get_ticks() < loopstop){
+    unsigned sstop1 = get_ticks() + m_halfPeriodCycles;
     digitalWrite(m_gpiopin, HIGH);
-    delayMicroseconds(m_halfPeriod);
+    while(get_ticks() < sstop1){}
+    unsigned sstop2 = get_ticks() + m_halfPeriodCycles;
     digitalWrite(m_gpiopin, LOW);
-    delayMicroseconds(m_halfPeriod);
+    while(get_ticks() < sstop2){}
   }
 }
 
+// 33% duty cycle
 void
-ir_send::ir_on_2(int time)
+ir_send::ir_on_33(int time)
 {
-  register long beginning = micros();
-  while((micros() - beginning) < time){
+  unsigned loopstop = get_ticks() + (time * CYCLES_USEC);
+  while(get_ticks() < loopstop){
+    unsigned sstop1 = get_ticks() + m_periodOver3Cycles;
     digitalWrite(m_gpiopin, HIGH);
-    delayMicroseconds(m_periodOver3);
+    while(get_ticks() < sstop1){}
+    unsigned sstop2 = get_ticks() + (m_periodOver3Cycles * 2);
     digitalWrite(m_gpiopin, LOW);
-    delayMicroseconds(m_periodOver3*2);
+    while(get_ticks() < sstop2){}
   }
 }
 
 void
 ir_send::ir_off(int time)
 {
+  unsigned loopstop = get_ticks() + (time * CYCLES_USEC);
   digitalWrite(m_gpiopin, LOW);
-  if (time > 0) delayMicroseconds(time);
+  while(get_ticks() < loopstop){}
 }
 
 void
