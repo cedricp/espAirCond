@@ -127,7 +127,7 @@ void setup() {
   WiFi.begin ( ssid, password );
   Serial.println ( "Warming up WIFI" );
   while ( WiFi.status() != WL_CONNECTED ) {
-    delay ( 500 );
+    delay(500);
   }
 
   if ( mdns.begin ( "esp_aircond", WiFi.localIP() ) ) {

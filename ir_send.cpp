@@ -37,7 +37,7 @@ ir_send::ir_on(int time)
 void
 ir_send::ir_on_2(int time)
 {
-  long beginning = micros();
+  register long beginning = micros();
   while((micros() - beginning) < time){
     digitalWrite(m_gpiopin, HIGH);
     delayMicroseconds(m_periodOver3);
