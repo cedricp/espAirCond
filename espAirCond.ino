@@ -12,9 +12,6 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 
-#include <OneWire.h>
-#include "DallasTemperature.h"
-
 const char *ssid = "YourSSIDHere";
 const char *password = "YourPSKHere";
 
@@ -27,16 +24,11 @@ ESP8266WebServer server ( 80 );
 fujitsu_contol fujitsu(AIRCOND_GPIO_PIN);
 airton_control airton(AIRCOND_GPIO_PIN);
 
-//OneWire  ds(DS1820_GPIO_PIN);
-//DallasTemperature sensors(&ds);
-
 aircond_control* current_controller = NULL;
 
 float get_temperature()
 {
-  //sensors.requestTemperatures(); 
-  //return sensors.getTempCByIndex(0);
-  return 0.;
+  return -1.;  
 }
 
 void handleNotFound(){
@@ -72,11 +64,6 @@ void handleRoot() {
       server.send(200, "text/plain", current_controller->get_as_json(get_temperature()));
     }
     
-    if ( server.hasArg("temperature") ){
-      int temp = server.arg("temperature").toInt();
-      retcode |= current_controller->set_temperature(temp);
-    }
-  
     if ( server.hasArg("mode") ){
       String mode = server.arg("mode");
       if (mode == "auto")
@@ -121,22 +108,18 @@ void handleRoot() {
 
 void setup() {
   WiFi.begin ( ssid, password );
-  Serial.begin(115200);
   Serial.println ( "Warming up WIFI" );
   while ( WiFi.status() != WL_CONNECTED ) {
     delay ( 500 );
-    Serial.println ( "*" );
   }
   
   if ( mdns.begin ( "esp8266", WiFi.localIP() ) ) {
-    Serial.println ( "MDNS responder started" );
+
   }
 
   server.on ( "/control", handleRoot );
   server.onNotFound(handleNotFound);
   server.begin();
-
-  //sensors.begin();
 }
 
 void loop() {
