@@ -8,8 +8,6 @@ class airton_control : public aircond_control
 public:
   airton_control(int ir_pin);
   ~airton_control();
-
-  void set_adress(char adress);
   
   virtual void send_data();
   virtual void poweron();

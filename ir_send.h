@@ -18,30 +18,14 @@ public:
 
   void set_gpio_pin(int pin);
   void set_period(int kHz);
-  
-  inline void ir_on(int time){
-    unsigned time0 = get_ticks() + (time * m_ratio);
-    register unsigned time1, time2; 
-    while(get_ticks() < time0){
-      time1 = get_ticks() + m_halfPeriodCount;
-      time2 = time1 + m_halfPeriodCount;
-      digitalWrite(m_gpiopin, HIGH);
-      while(get_ticks() < time1){}
-      digitalWrite(m_gpiopin, LOW);
-      while(get_ticks() < time2){}
-    }
-  }
-  
-  inline void ir_off(int time){
-    digitalWrite(m_gpiopin, LOW);
-    register unsigned time0 = get_ticks() + (time * m_ratio);
-    while(get_ticks() < time0){}
-  }
+  void ir_on(int time);
+  void ir_on_2(int time);
+  void ir_off(int time);
   
 private:
-  unsigned m_halfPeriodCount;
-  unsigned m_ratio;
-  unsigned m_gpiopin;
+  int m_halfPeriod;
+  int m_periodOver3;
+  int m_gpiopin;
 };
 
 #endif

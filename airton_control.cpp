@@ -1,34 +1,33 @@
 /*
  * Airton InfraRed module
- * Based on document found on http://www.alphak.net/
+ * For YKRH remote control replacement
+ * Cedric PAILLE 2016
  */
 
 #include "airton_control.h"
 
 #define MASK_MSB 0x80
-#define TEMPERATURE_OFFSET 0x5c
-#define CURRENT_TEMPERATURE_OFFSET 0x54
+#define TEMPERATURE_OFFSET 0x4C
 
 #define AIRTON_MODE_HEAT 0x01 << 4
 #define AIRTON_MODE_COOL 0x02 << 4
 #define AIRTON_MODE_DRY  0x03 << 4
 
-#define AIRTON_FAN_SPEED_AUTO 0x00
+#define AIRTON_FAN_SPEED_AUTO 0x80
 #define AIRTON_FAN_SPEED_HIGH 0x01
 #define AIRTON_FAN_SPEED_LOW  0x02
 #define AIRTON_FAN_SPEED_MID  0x03
 
-#define POWER_ON  0x03 << 6
+#define POWER_ON  0x01
 #define POWER_OFF 0x00 
 
 airton_control::airton_control(int ir_pin) : aircond_control(ir_pin)
 {
   ir.set_period(38);
   m_temperature  = 20;
-  m_power_status = POWER_OFF;
+  m_power_status = POWER_ON;
   m_air_mode = AIRTON_MODE_HEAT;
   m_fan_mode = AIRTON_FAN_SPEED_AUTO;
-  m_adress   = 0x56;
 }
 
 airton_control::~airton_control()
@@ -43,12 +42,14 @@ void airton_control::set_power(bool on)
 
 void airton_control::poweron()
 {
-
+  set_power(true);
+  send_data();
 }
 
 void airton_control::poweroff()
 {
-  
+  set_power(false);
+  send_data();
 }
 
 bool
@@ -87,36 +88,30 @@ airton_control::set_ac_mode(ac_mode mode)
 }
 
 void
-airton_control::set_adress(char adress)
-{
-  m_adress = adress;
-}
-
-void
 airton_control::send_leader()
 {
-  ir.ir_on(8100);
+  ir.ir_on_2(8100);
   ir.ir_off(4000);
 }
 
 void
 airton_control::send_trailer()
 {
-  ir.ir_on(550);
+  ir.ir_on_2(550);
   ir.ir_off(5000);
 }
 
 void
 airton_control::send_bit_one()
 {
-  ir.ir_on(550);
+  ir.ir_on_2(550);
   ir.ir_off(550);
 }
 
 void
 airton_control::send_bit_zero()
 {
-  ir.ir_on(550);
+  ir.ir_on_2(550);
   ir.ir_off(1450);
 }
 
@@ -161,37 +156,37 @@ airton_control::compute_crc(char *bytes)
 {
   int i;
   int sum = 0;
-  for (i = 0; i < 13; ++i){
-    sum += (bytes[i] & 0xf0) >> 4;
-    sum += (bytes[i] & 0x0f);
+  for (i = 0; i < 12; ++i){
+    sum += bytes[i];
   }
-  return sum % 0x100;
+  return sum & 0xFF;
 }
 
 void
 airton_control::send_data()
 {
-  char bytes[15], i;
-  bytes[0] = m_adress;
+  char bytes[13], i;
+  // Device ID ??
+  bytes[0] = 0xC3;
   bytes[1] = m_temperature + TEMPERATURE_OFFSET;
   bytes[2] = 0x00;
   bytes[3] = 0x00;
-  bytes[4] = m_air_mode | m_fan_mode;
-  bytes[5] = m_power_status;
-  bytes[6] = 0x00;
-  bytes[7] = m_temperature + CURRENT_TEMPERATURE_OFFSET;
+  bytes[4] = 0xA0;
+  bytes[5] = 0x00;
+  // Fan mode setting
+  bytes[6] = 0x80;
+  bytes[7] = 0x00;
   bytes[8] = 0x00;
-  bytes[9] = 0x00;
+  // Mode setting
+  bytes[9] = 0x20;
   bytes[10] = 0x00;
-  bytes[11] = 0x00;
-  bytes[12] = 0x00;
-  bytes[13] = 0x00;
-  bytes[14] = compute_crc(bytes);
+  bytes[11] = m_power_status;
+  bytes[12] = compute_crc(bytes);
   
   noInterrupts(); 
   send_leader();
 
-  for (i = 0; i < 15; ++i){
+  for (i = 0; i < 13; ++i){
     send_byte(bytes[i]);
   }
 
