@@ -15,7 +15,6 @@
 const char *ssid = "YourSSIDHere";
 const char *password = "YourPSKHere";
 
-#define DS1820_GPIO_PIN  2
 #define AIRCOND_GPIO_PIN 0
 
 MDNSResponder mdns;

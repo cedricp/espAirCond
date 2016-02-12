@@ -15,7 +15,6 @@ public:
   virtual void poweron();
   
   virtual bool set_temperature(int temp);
-  virtual void set_adress(char adress);
   virtual bool set_ac_mode(ac_mode mode);
   virtual bool set_swing(bool horizontal, bool vertical);
   virtual bool set_fan_mode(fan_mode mode);

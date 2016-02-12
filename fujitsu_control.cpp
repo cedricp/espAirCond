@@ -77,7 +77,7 @@ fujitsu_contol::set_fan_mode(fan_mode mode)
 void
 fujitsu_contol::set_power(bool on)
 {
-  m_power_status = on ? 1 : 0;
+  m_power_status = on;
 }
 
 bool
@@ -111,12 +111,6 @@ fujitsu_contol::set_ac_mode(ac_mode mode)
   return true;
 }
 
-
-void
-fujitsu_contol::set_adress(char adress)
-{
-  m_adress = adress;
-}
 
 void fujitsu_contol::send_leader()
 {
@@ -205,6 +199,7 @@ fujitsu_contol::send_data()
 void
 fujitsu_contol::poweroff()
 {
+  set_power(false);
   char bytes[7], i;
   bytes[0] = 0x14;
   bytes[1] = 0x63;
