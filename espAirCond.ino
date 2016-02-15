@@ -122,6 +122,19 @@ void handleRoot() {
         return;
       }
     }
+
+    if ( server.hasArg("swing") ) {
+      String mode = server.arg("swing");
+      if (mode == "h")
+        current_controller->set_swing(true, false);
+      if (mode == "v")
+        current_controller->set_swing(false, true);
+      if (mode == "hv")
+        current_controller->set_swing(true, true);
+      if (mode == "off")
+        current_controller->set_swing(false, false);
+    }
+    
     if ( server.hasArg("power") ) {
       String power = server.arg("power");
       if (power == "on"){

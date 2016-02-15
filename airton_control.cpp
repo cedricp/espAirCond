@@ -35,13 +35,13 @@
 #define AIRTON_MODE_AUTO 0x10
 #define AIRTON_MODE_FAN  0x70
 
-#define AIRTON_FAN_SPEED_AUTO 0b010
-#define AIRTON_FAN_SPEED_HIGH 0b101
-#define AIRTON_FAN_SPEED_LOW  0b110
-#define AIRTON_FAN_SPEED_MID  0b111
+#define AIRTON_FAN_SPEED_AUTO 0b00000101
+#define AIRTON_FAN_SPEED_HIGH 0b00000001
+#define AIRTON_FAN_SPEED_LOW  0b00000011
+#define AIRTON_FAN_SPEED_MID  0b00000010
 
+#define AIRTON_SWING_OFF 0b00000111
 #define AIRTON_SWING_ON 0x00
-#define AIRTON_SWING_OFF 0XA0
 
 #define POWER_ON  0x20
 #define POWER_OFF 0x00 
@@ -53,11 +53,19 @@ airton_control::airton_control(int ir_pin) : aircond_control(ir_pin)
   m_power_status = POWER_ON;
   m_air_mode = AIRTON_MODE_HEAT;
   m_fan_mode = AIRTON_FAN_SPEED_AUTO;
+  m_swing = AIRTON_SWING_ON;
 }
 
 airton_control::~airton_control()
 {
   
+}
+
+bool
+airton_control::set_swing(bool h, bool v)
+{
+  m_swing =  v ? AIRTON_SWING_ON : AIRTON_SWING_OFF;
+  return true;
 }
 
 void airton_control::set_power(bool on)
@@ -84,13 +92,6 @@ airton_control::set_temperature(int temp)
     return false;
   m_temperature = temp;
   return true;
-}
-
-
-bool
-airton_control::set_swing(bool horizontal, bool vertical)
-{
-  return false;
 }
 
 bool
@@ -200,10 +201,10 @@ airton_control::send_data()
 {
   static char bytes[13], i;
   bytes[0]  = 0xC3;
-  bytes[1]  = ((m_temperature - 8) << 3);
+  bytes[1]  = ((m_temperature - 8) << 3) | m_swing;
   bytes[2]  = 0x00;
   bytes[3]  = 0x00;
-  bytes[4]  = m_fan_mode;
+  bytes[4]  = m_fan_mode << 5;
   bytes[5]  = 0x00;
   bytes[6]  = m_air_mode;
   bytes[7]  = 0x00;
