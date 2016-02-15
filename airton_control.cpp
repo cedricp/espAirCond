@@ -149,11 +149,13 @@ airton_control::send_bit_one()
 bool
 airton_control::set_fan_mode(fan_mode mode)
 {
+  // No "quiet mode" on Airton
   switch(mode){
   case FAN_SPEED_AUTO:
     m_fan_mode = AIRTON_FAN_SPEED_AUTO;
     break;
   case FAN_SPEED_LOW:
+  case FAN_SPEED_QUIET:
     m_fan_mode = AIRTON_FAN_SPEED_LOW;
     break;
   case FAN_SPEED_MID:

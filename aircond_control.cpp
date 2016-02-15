@@ -51,13 +51,13 @@ String
 aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* status)
 {
   String json = "{\n";
-  json += "\"temperature\": " + String(m_temperature) + "\n";
-  json += "\"power_state\":" + power_to_string(m_power_status) + "\n";
-  json += "\"current_temp\":" + String(curr_temp) + "\n";
-  json += "\"humidity\": " + String(curr_humidity) + "\n";
-  json += "\"DHTstatus\": " + String(status) + "\n";
-  json += "\"fan_mode\":" + fan_to_string(m_fan_mode) + "\n";
+  json += "\"ac_temperature\" : " + String(m_temperature) + "\n";
+  json += "\"ac_power_state\" :" + power_to_string(m_power_status) + "\n";
+  json += "\"ac_fan_mode\" :" + fan_to_string(m_fan_mode) + "\n";
   json += "\"ac_mode\":" + ac_to_string(m_air_mode) + "\n";
+  json += "\"temperature\" :" + String(curr_temp) + "\n";
+  json += "\"humidity\" : " + String(curr_humidity) + "\n";
+  json += "\"DHTstatus\" : " + String(status) + "\n";
   json += "}\n";
   
   return json;
