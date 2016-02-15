@@ -34,7 +34,7 @@ public:
   virtual bool set_ac_mode(ac_mode mode) = 0;
   virtual bool set_swing(bool horizontal, bool vertical) = 0;
   virtual bool set_fan_mode(fan_mode mode) = 0;
-  String get_as_json(float curr_temp);
+  String get_as_json(float curr_temp, float curr_hum, const char* status);
 protected:
   ir_send ir;
   char m_temperature;

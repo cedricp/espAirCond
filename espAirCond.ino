@@ -4,35 +4,42 @@
    License : WTFPL (http://www.wtfpl.net/)
 */
 
-#include "airton_control.h"
-#include "fujitsu_control.h"
-
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 
-/*
- * define these constants in config.h
- * const char *ssid = "your_ssid";
- * const char *password = "your_password";
- */
+#include "airton_control.h"
+#include "fujitsu_control.h"
+#include "dht.h"
 #include "config.h"
 
+/*
+ * define these constants in config.h
+ * prog_char ssid[]      PROGMEM = "your_ssid";
+ * prog_char password[]  PROGMEM = "your_password";
+ */
+
+#define WITH_DHT 1
+
+// GPIO Config
 #define AIRCOND_GPIO_PIN 0
+#define DHT22_PIN 2
 
 MDNSResponder mdns;
 ESP8266WebServer server ( 80 );
+
+#define WITH_DHT 1
+
+#if WITH_DHT == 1
+
+DHT dht;
+#endif
 
 fujitsu_contol fujitsu(AIRCOND_GPIO_PIN);
 airton_control airton(AIRCOND_GPIO_PIN);
 
 aircond_control* current_controller = NULL;
-
-float get_temperature()
-{
-  return -1.;  
-}
 
 void handleNotFound() {
   String message = "File Not Found\n\n";
@@ -50,8 +57,6 @@ void handleNotFound() {
 }
 
 void handleRoot() {
-  bool retcode = false;
-
   current_controller = NULL;
 
   if ( server.hasArg("model") ) {
@@ -64,27 +69,36 @@ void handleRoot() {
   if (current_controller != NULL) {
 
     if ( server.args() == 0 ) {
-      server.send(200, "text/plain", current_controller->get_as_json(get_temperature()));
+#if WITH_DHT == 1
+      float temp = dht.getTemperature();
+      float hum  = dht.getHumidity();
+      const char* sts = dht.getStatusString();
+#else
+      float temp = 0.;
+      float hum  = 0.;
+      const char* sts = "Not installed";
+#endif
+      server.send(200, "text/plain", current_controller->get_as_json(temp, hum, sts));
       return;
     }
 
     if ( server.hasArg("temperature") ) {
       int temp = server.arg("temperature").toInt();
-      retcode |= current_controller->set_temperature(temp);
+      current_controller->set_temperature(temp);
     }
 
     if ( server.hasArg("mode") ) {
       String mode = server.arg("mode");
       if (mode == "auto")
-        retcode |= current_controller->set_ac_mode(MODE_AUTO);
+        current_controller->set_ac_mode(MODE_AUTO);
       else if (mode == "cool")
-        retcode |= current_controller->set_ac_mode(MODE_COOL);
+        current_controller->set_ac_mode(MODE_COOL);
       else if (mode == "heat")
-        retcode |= current_controller->set_ac_mode(MODE_HEAT);
+        current_controller->set_ac_mode(MODE_HEAT);
       else if (mode == "fan")
-        retcode |= current_controller->set_ac_mode(MODE_FAN);
+        current_controller->set_ac_mode(MODE_FAN);
       else if (mode == "dry")
-        retcode |= current_controller->set_ac_mode(MODE_DRY);
+        current_controller->set_ac_mode(MODE_DRY);
       else {
         server.send(200, "text/plain", "Argument 'mode' error");
         return;
@@ -94,15 +108,15 @@ void handleRoot() {
     if ( server.hasArg("fan") ) {
       String fan = server.arg("fan");
       if (fan == "auto")
-        retcode |= current_controller->set_fan_mode(FAN_SPEED_AUTO);
+        current_controller->set_fan_mode(FAN_SPEED_AUTO);
       else if (fan == "low")
-        retcode |= current_controller->set_fan_mode(FAN_SPEED_LOW);
+        current_controller->set_fan_mode(FAN_SPEED_LOW);
       else if (fan == "mid")
-        retcode |= current_controller->set_fan_mode(FAN_SPEED_MID);
+        current_controller->set_fan_mode(FAN_SPEED_MID);
       else if (fan == "high")
-        retcode |= current_controller->set_fan_mode(FAN_SPEED_HIGH);
+        current_controller->set_fan_mode(FAN_SPEED_HIGH);
       else if (fan == "quiet")
-        retcode |= current_controller->set_fan_mode(FAN_SPEED_QUIET);
+        current_controller->set_fan_mode(FAN_SPEED_QUIET);
       else{
         server.send(200, "text/plain", "Argument 'fan' error");
         return;
@@ -121,8 +135,10 @@ void handleRoot() {
         return;
       }      
     }
+    
     current_controller->send_data();
     server.send(200, "text/plain", "OK");
+    
   } else {
     String message = "You must define a valid aircond model\n\n";
     server.send(200, "text/plain", message);
@@ -143,13 +159,14 @@ void setup() {
   server.on ( "/control", handleRoot );
   server.onNotFound(handleNotFound);
   server.begin();
-
+#if WITH_DHT == 1
+  dht.setup(DHT22_PIN, DHT::DHT22);
+#endif
 }
 
 void loop() {
   mdns.update();
   server.handleClient();
-  //ESP.deepSleep(10000, WAKE_RF_DEFAULT);
-  delay(200);
+  delay(50);
 }
 

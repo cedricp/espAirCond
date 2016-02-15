@@ -2,8 +2,31 @@
  * Airton InfraRed module
  * For YKRH remote control replacement
  * Cedric PAILLE 2016
+ * 
+ * Airton IR code is composed of 13 bytes
+ * the IR frequency is 38Khz (33% duty cycle)
+ * Bytes are sent in LSB first order
+ * Byte 0 is a constant value (I guess the "address" of the aircond)
+ * Bytes 2,5,7,8,10 are not used
+ * Byte 1 is the temperature in celcius - 8 with a logical shift left of 3 [ttttt***]
+ * Byte 12 is the crc code (sum of bytes 0-11 & 0xFF)
+ * Byte 9 is the power bit [******p*] (p = 0 -> off, p = 1 ->on)
+ * 
+ * Leader frame :
+ * 8100 us IR on + 4400 IR off
+ * 
+ * Trailer frame:
+ * 650us IR on + 5000 IR off
+ * 
+ * Bit zero :
+ * 650us IR on + 450 us IR off (1100 us total)
+ * 
+ * Bit one :
+ * 650us IR on + 1550 IR off (2200us total)
+ * 
  */
 
+  
 #include "airton_control.h"
 
 #define AIRTON_MODE_HEAT 0x80
@@ -57,7 +80,7 @@ void airton_control::poweroff()
 bool
 airton_control::set_temperature(int temp)
 {
-  if (temp < 16 || temp > 28)
+  if (temp < 16 || temp > 32)
     return false;
   m_temperature = temp;
   return true;
@@ -173,19 +196,17 @@ airton_control::compute_crc(char *bytes)
 void
 airton_control::send_data()
 {
-  char bytes[13], i;
-  // Device ID
-  bytes[0] = 0xC3;
-  bytes[1] = ((m_temperature - 8) << 3);
-  bytes[2] = 0x00;
-  bytes[3] = 0x00;
-  // Fan mode setting
-  bytes[4] = m_fan_mode;
-  bytes[5] = 0x00;
-  bytes[6] = m_air_mode;
-  bytes[7] = 0x00;
-  bytes[8] = 0x00;
-  bytes[9] = m_power_status;
+  static char bytes[13], i;
+  bytes[0]  = 0xC3;
+  bytes[1]  = ((m_temperature - 8) << 3);
+  bytes[2]  = 0x00;
+  bytes[3]  = 0x00;
+  bytes[4]  = m_fan_mode;
+  bytes[5]  = 0x00;
+  bytes[6]  = m_air_mode;
+  bytes[7]  = 0x00;
+  bytes[8]  = 0x00;
+  bytes[9]  = m_power_status;
   bytes[10] = 0x00;
   bytes[11] = 0x01;
   bytes[12] = compute_crc(bytes);

@@ -3,13 +3,6 @@
 
 #include <Arduino.h>
 
-static inline unsigned get_ticks(void)
-{
-    unsigned r;
-    asm volatile ("rsr %0, ccount" : "=r"(r));
-    return r;
-}
-
 class ir_send
 {
 public:
