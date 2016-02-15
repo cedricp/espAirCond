@@ -21,7 +21,7 @@ void
 ir_send::set_period(int kHz)
 {
   // period in cycles
-  float periodcylces = (1000.f / (float)kHz) * 80.f;
+  float periodcylces = (1000.f / (float)kHz) * (float)CYCLES_USEC;
   
   m_halfPeriodCycles = periodcylces / 2.0f;
   m_periodOver3Cycles = periodcylces / 3.0f;
@@ -42,16 +42,28 @@ ir_send::ir_on(int time)
   }
 }
 
+// 50% duty cycle
+void
+ir_send::ir_on_100(int time)
+{
+  unsigned loopstop = get_ticks() + (time * CYCLES_USEC);
+  while(get_ticks() < loopstop){
+    unsigned sstop1 = get_ticks() + (m_halfPeriodCycles * 2);
+    digitalWrite(m_gpiopin, HIGH);
+    while(get_ticks() < sstop1){}
+  }
+}
+
 // 33% duty cycle
 void
 ir_send::ir_on_33(int time)
 {
   unsigned loopstop = get_ticks() + (time * CYCLES_USEC);
   while(get_ticks() < loopstop){
-    unsigned sstop1 = get_ticks() + m_periodOver3Cycles;
+    unsigned sstop1 = get_ticks() + 701;
     digitalWrite(m_gpiopin, HIGH);
     while(get_ticks() < sstop1){}
-    unsigned sstop2 = get_ticks() + (m_periodOver3Cycles * 2);
+    unsigned sstop2 = get_ticks() + 1400;
     digitalWrite(m_gpiopin, LOW);
     while(get_ticks() < sstop2){}
   }

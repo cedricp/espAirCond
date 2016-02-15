@@ -12,8 +12,12 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 
-const char *ssid = "YourSSIDHere";
-const char *password = "YourPSKHere";
+/*
+ * define these constants in config.h
+ * const char *ssid = "your_ssid";
+ * const char *password = "your_password";
+ */
+#include "config.h"
 
 #define AIRCOND_GPIO_PIN 0
 
@@ -61,6 +65,7 @@ void handleRoot() {
 
     if ( server.args() == 0 ) {
       server.send(200, "text/plain", current_controller->get_as_json(get_temperature()));
+      return;
     }
 
     if ( server.hasArg("temperature") ) {
@@ -80,9 +85,10 @@ void handleRoot() {
         retcode |= current_controller->set_ac_mode(MODE_FAN);
       else if (mode == "dry")
         retcode |= current_controller->set_ac_mode(MODE_DRY);
-      else
+      else {
         server.send(200, "text/plain", "Argument 'mode' error");
-      return;
+        return;
+      }
     }
 
     if ( server.hasArg("fan") ) {
@@ -97,9 +103,10 @@ void handleRoot() {
         retcode |= current_controller->set_fan_mode(FAN_SPEED_HIGH);
       else if (fan == "quiet")
         retcode |= current_controller->set_fan_mode(FAN_SPEED_QUIET);
-      else
+      else{
         server.send(200, "text/plain", "Argument 'fan' error");
-      return;
+        return;
+      }
     }
     if ( server.hasArg("power") ) {
       String power = server.arg("power");
@@ -125,22 +132,24 @@ void handleRoot() {
 
 void setup() {
   WiFi.begin ( ssid, password );
-  Serial.println ( "Warming up WIFI" );
   while ( WiFi.status() != WL_CONNECTED ) {
     delay(500);
   }
 
-  if ( mdns.begin ( "esp_aircond", WiFi.localIP() ) ) {
+  if ( mdns.begin ( "esp_ac", WiFi.localIP() ) ) {
 
   }
 
   server.on ( "/control", handleRoot );
   server.onNotFound(handleNotFound);
   server.begin();
+
 }
 
 void loop() {
   mdns.update();
   server.handleClient();
+  //ESP.deepSleep(10000, WAKE_RF_DEFAULT);
+  delay(200);
 }
 

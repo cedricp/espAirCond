@@ -142,12 +142,12 @@ fujitsu_contol::send_byte(char b)
 {
   int i;
   for (i = 0; i < 8; ++i) {
-    if (b & MASK_MSB) {
+    if (b & 0x1) {
       send_bit_one();
     } else {
       send_bit_zero();
     }
-    b <<= 1;
+    b = b >> 1;
   }
 }
 

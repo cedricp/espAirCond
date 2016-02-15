@@ -20,6 +20,7 @@ public:
   void set_period(int kHz);
   void ir_on(int time);
   void ir_on_33(int time);
+  void ir_on_100(int time);
   void ir_off(int time);
   
 private:

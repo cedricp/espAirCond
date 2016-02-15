@@ -6,25 +6,27 @@
 
 #include "airton_control.h"
 
-#define MASK_MSB 0x80
-#define TEMPERATURE_OFFSET 0x4C
+#define AIRTON_MODE_HEAT 0x80
+#define AIRTON_MODE_COOL 0x30
+#define AIRTON_MODE_DRY  0x40
+#define AIRTON_MODE_AUTO 0x10
+#define AIRTON_MODE_FAN  0x70
 
-#define AIRTON_MODE_HEAT 0x01 << 4
-#define AIRTON_MODE_COOL 0x02 << 4
-#define AIRTON_MODE_DRY  0x03 << 4
+#define AIRTON_FAN_SPEED_AUTO 0b010
+#define AIRTON_FAN_SPEED_HIGH 0b101
+#define AIRTON_FAN_SPEED_LOW  0b110
+#define AIRTON_FAN_SPEED_MID  0b111
 
-#define AIRTON_FAN_SPEED_AUTO 0x80
-#define AIRTON_FAN_SPEED_HIGH 0x01
-#define AIRTON_FAN_SPEED_LOW  0x02
-#define AIRTON_FAN_SPEED_MID  0x03
+#define AIRTON_SWING_ON 0x00
+#define AIRTON_SWING_OFF 0XA0
 
-#define POWER_ON  0x01
+#define POWER_ON  0x20
 #define POWER_OFF 0x00 
 
 airton_control::airton_control(int ir_pin) : aircond_control(ir_pin)
 {
   ir.set_period(38);
-  m_temperature  = 20;
+  m_temperature  = 19;
   m_power_status = POWER_ON;
   m_air_mode = AIRTON_MODE_HEAT;
   m_fan_mode = AIRTON_FAN_SPEED_AUTO;
@@ -55,7 +57,7 @@ void airton_control::poweroff()
 bool
 airton_control::set_temperature(int temp)
 {
-  if (temp < 16 || temp > 31)
+  if (temp < 16 || temp > 28)
     return false;
   m_temperature = temp;
   return true;
@@ -81,6 +83,12 @@ airton_control::set_ac_mode(ac_mode mode)
     case MODE_DRY:
       m_air_mode = AIRTON_MODE_DRY;
       break;
+    case MODE_AUTO:
+      m_air_mode = AIRTON_MODE_AUTO;
+      break;
+    case MODE_FAN:
+      m_air_mode = AIRTON_MODE_FAN;
+      break;
     default:
       return false;
   }
@@ -91,28 +99,28 @@ void
 airton_control::send_leader()
 {
   ir.ir_on_33(8100);
-  ir.ir_off(4000);
+  ir.ir_off(4400);
 }
 
 void
 airton_control::send_trailer()
 {
-  ir.ir_on_33(550);
+  ir.ir_on_33(650);
   ir.ir_off(5000);
 }
 
 void
 airton_control::send_bit_zero()
 {
-  ir.ir_on_33(550);
-  ir.ir_off(550);
+  ir.ir_on_33(650);
+  ir.ir_off(450);
 }
 
 void
 airton_control::send_bit_one()
 {
-  ir.ir_on_33(550);
-  ir.ir_off(1450);
+  ir.ir_on_33(650);
+  ir.ir_off(1550);
 }
 
 bool
@@ -142,12 +150,12 @@ airton_control::send_byte(char b)
 {
   int i;
   for (i = 0; i < 8; ++i){
-    if (b & MASK_MSB)
+    if (b & 0x01)
       send_bit_one();
     else
       send_bit_zero();
       
-    b <<= 1;
+    b = b >> 1;
   }
 }
 
@@ -166,21 +174,20 @@ void
 airton_control::send_data()
 {
   char bytes[13], i;
-  // Device ID ??
+  // Device ID
   bytes[0] = 0xC3;
-  bytes[1] = m_temperature + TEMPERATURE_OFFSET;
+  bytes[1] = ((m_temperature - 8) << 3);
   bytes[2] = 0x00;
   bytes[3] = 0x00;
-  bytes[4] = 0xA0;
-  bytes[5] = 0x00;
   // Fan mode setting
-  bytes[6] = 0x80;
+  bytes[4] = m_fan_mode;
+  bytes[5] = 0x00;
+  bytes[6] = m_air_mode;
   bytes[7] = 0x00;
   bytes[8] = 0x00;
-  // Mode setting
-  bytes[9] = 0x20;
+  bytes[9] = m_power_status;
   bytes[10] = 0x00;
-  bytes[11] = m_power_status;
+  bytes[11] = 0x01;
   bytes[12] = compute_crc(bytes);
   
   noInterrupts(); 
