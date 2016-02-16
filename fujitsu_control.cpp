@@ -27,11 +27,6 @@
 fujitsu_contol::fujitsu_contol(int ir_pin, bool open_drain) : aircond_control(ir_pin, open_drain)
 {
   ir.set_period(38);
-  
-  m_temperature  = 20;
-  m_air_mode     = FJTSU_AIR_MODE_HEAT;
-  m_fan_mode     = FJTSU_FAN_SPEED_AUTO;
-  m_power_status = 0;
 }
 
 fujitsu_contol::~fujitsu_contol()

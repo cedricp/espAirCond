@@ -49,12 +49,6 @@
 airton_control::airton_control(int ir_pin, bool open_drain) : aircond_control(ir_pin, open_drain)
 {
   ir.set_period(38);
-  
-  m_temperature   = 19;
-  m_power_status  = POWER_ON;
-  m_air_mode      = AIRTON_MODE_HEAT;
-  m_fan_mode      = AIRTON_FAN_SPEED_AUTO;
-  m_swing_v       = AIRTON_SWING_ON;
 }
 
 airton_control::~airton_control()

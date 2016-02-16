@@ -1,5 +1,14 @@
 #include "aircond_control.h"
 
+aircond_control::aircond_control(int ir_pin, bool open_drain)
+{
+  ir.set_gpio_pin(ir_pin, open_drain);
+  m_temperature  = 20;
+  m_air_mode     = MODE_HEAT;
+  m_fan_mode     = FAN_SPEED_AUTO;
+  m_power_status = 0;
+}
+
 String ac_to_string(char airmode){
   switch(airmode){
     case MODE_COOL:
