@@ -57,7 +57,6 @@ void fujitsu_contol::send_bit_one()
   ir.ir_off(200);
 }
 
-
 void fujitsu_contol::send_bit_zero()
 {
   ir.ir_on(580);

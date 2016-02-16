@@ -153,7 +153,6 @@ void DHT::readSensor()
   {
     interrupts();  
     error = ERROR_TIMEOUT;
-    Serial.println("t1");
     return;
   }
 
@@ -161,7 +160,6 @@ void DHT::readSensor()
   {
     interrupts();
     error = ERROR_TIMEOUT;
-    Serial.println("t2");
     return;
   }
   
