@@ -20,6 +20,7 @@ private:
   void send_bit_zero();
   void send_byte(char);
   char compute_crc(char *bytes);
+  bool m_powermem;
 };
 
 #endif

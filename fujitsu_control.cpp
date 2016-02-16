@@ -24,9 +24,6 @@
 #define SWING_HORZONTAL 0x02
 #define SWING_BOTH      0x03
 
-// Time base unit for IR coding in microseconds
-#define UNIT_TIME 412
-
 fujitsu_contol::fujitsu_contol(int ir_pin, bool open_drain) : aircond_control(ir_pin, open_drain)
 {
   ir.set_period(38);
@@ -44,27 +41,27 @@ fujitsu_contol::~fujitsu_contol()
 
 void fujitsu_contol::send_leader()
 {
-  ir.ir_on(UNIT_TIME*8);
-  ir.ir_off(UNIT_TIME*4);
+  ir.ir_on(5500);
+  ir.ir_off(1440);
 }
 
 void fujitsu_contol::send_trailer()
 {
-  ir.ir_on(UNIT_TIME);
-  ir.ir_off(UNIT_TIME*4);
+  ir.ir_on(580);
+  ir.ir_off(800);
 }
 
 void fujitsu_contol::send_bit_one()
 {
-  ir.ir_on(UNIT_TIME);
-  ir.ir_off(UNIT_TIME);
+  ir.ir_on(580);
+  ir.ir_off(200);
 }
 
 
 void fujitsu_contol::send_bit_zero()
 {
-  ir.ir_on(UNIT_TIME);
-  ir.ir_off(UNIT_TIME*3);
+  ir.ir_on(580);
+  ir.ir_off(1060);
 }
 
 void
@@ -89,7 +86,7 @@ fujitsu_contol::compute_crc(char *bytes)
   for (i = 7; i < 15; ++i) {
     sum += bytes[i];
   }
-  return 0x100 - (sum & 0xff) ;
+  return 0x100 - (sum & 0xff);
 }
 
 void
@@ -142,12 +139,12 @@ fujitsu_contol::send_data()
   bytes[0] = 0x14;
   bytes[1] = 0x63;
   bytes[2] = 0x00;
-  bytes[3] = 0x10;
+  bytes[3] = 0x00;
   bytes[4] = 0x10;
   bytes[5] = 0xFE;
   bytes[6] = 0x09;
   bytes[7] = 0x30;
-  bytes[8] = ((temp - 16) << 4) | m_power_status;
+  bytes[8] = ((temp - 16) << 4) | m_powermem;
   bytes[9] = air_mode;
   bytes[10] = fan_mode | (swing << 4);
   bytes[11] = 0x00;
@@ -156,7 +153,7 @@ fujitsu_contol::send_data()
   bytes[14] = 0x20;
   bytes[15] = compute_crc(bytes);
 
-  m_power_status = 0;
+  m_powermem = false;
 
   while(!ir.can_begin_send()){
     // Don't start until we risk a clock overflow
@@ -177,11 +174,12 @@ void
 fujitsu_contol::poweroff()
 {
   set_power(false);
+  m_powermem = false;
   char bytes[7], i;
   bytes[0] = 0x14;
   bytes[1] = 0x63;
   bytes[2] = 0x00;
-  bytes[3] = 0x10;
+  bytes[3] = 0x00;
   bytes[4] = 0x10;
   bytes[5] = 0x02;
   bytes[6] = 0xFD;
@@ -199,6 +197,7 @@ void
 fujitsu_contol::poweron()
 {
   set_power(true);
+  m_powermem = true;
   send_data();
 }
 
