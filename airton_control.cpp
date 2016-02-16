@@ -41,7 +41,7 @@
 #define AIRTON_FAN_SPEED_MID  0b00000010
 
 #define AIRTON_SWING_OFF 0b00000111
-#define AIRTON_SWING_ON 0x00
+#define AIRTON_SWING_ON  0x00
 
 #define POWER_ON  0x20
 #define POWER_OFF 0x00 
@@ -49,28 +49,17 @@
 airton_control::airton_control(int ir_pin) : aircond_control(ir_pin)
 {
   ir.set_period(38);
-  m_temperature  = 19;
-  m_power_status = POWER_ON;
-  m_air_mode = AIRTON_MODE_HEAT;
-  m_fan_mode = AIRTON_FAN_SPEED_AUTO;
-  m_swing = AIRTON_SWING_ON;
+  
+  m_temperature   = 19;
+  m_power_status  = POWER_ON;
+  m_air_mode      = AIRTON_MODE_HEAT;
+  m_fan_mode      = AIRTON_FAN_SPEED_AUTO;
+  m_swing_v       = AIRTON_SWING_ON;
 }
 
 airton_control::~airton_control()
 {
   
-}
-
-bool
-airton_control::set_swing(bool h, bool v)
-{
-  m_swing =  v ? AIRTON_SWING_ON : AIRTON_SWING_OFF;
-  return true;
-}
-
-void airton_control::set_power(bool on)
-{
-  m_power_status = on ? POWER_ON : POWER_OFF;
 }
 
 void airton_control::poweron()
@@ -83,40 +72,6 @@ void airton_control::poweroff()
 {
   set_power(false);
   send_data();
-}
-
-bool
-airton_control::set_temperature(int temp)
-{
-  if (temp < 16 || temp > 32)
-    return false;
-  m_temperature = temp;
-  return true;
-}
-
-bool
-airton_control::set_ac_mode(ac_mode mode)
-{
-  switch(mode){
-    case MODE_COOL:
-      m_air_mode = AIRTON_MODE_COOL;
-      break;
-    case MODE_HEAT:
-      m_air_mode = AIRTON_MODE_HEAT;
-      break;
-    case MODE_DRY:
-      m_air_mode = AIRTON_MODE_DRY;
-      break;
-    case MODE_AUTO:
-      m_air_mode = AIRTON_MODE_AUTO;
-      break;
-    case MODE_FAN:
-      m_air_mode = AIRTON_MODE_FAN;
-      break;
-    default:
-      return false;
-  }
-  return true;
 }
 
 void
@@ -147,30 +102,6 @@ airton_control::send_bit_one()
   ir.ir_off(1550);
 }
 
-bool
-airton_control::set_fan_mode(fan_mode mode)
-{
-  // No "quiet mode" on Airton
-  switch(mode){
-  case FAN_SPEED_AUTO:
-    m_fan_mode = AIRTON_FAN_SPEED_AUTO;
-    break;
-  case FAN_SPEED_LOW:
-  case FAN_SPEED_QUIET:
-    m_fan_mode = AIRTON_FAN_SPEED_LOW;
-    break;
-  case FAN_SPEED_MID:
-    m_fan_mode = AIRTON_FAN_SPEED_MID;
-    break;
-  case FAN_SPEED_HIGH:
-    m_fan_mode = AIRTON_FAN_SPEED_HIGH;
-    break;
-  default:
-    return false;
-  }
-  return true;
-}
-
 void
 airton_control::send_byte(char b)
 {
@@ -199,20 +130,68 @@ airton_control::compute_crc(char *bytes)
 void
 airton_control::send_data()
 {
+  int fan_mode, air_mode, power_status, temp, swing;
+  // No "quiet mode" on Airton
+  switch(m_fan_mode){
+  case FAN_SPEED_LOW:
+  case FAN_SPEED_QUIET:
+    fan_mode = AIRTON_FAN_SPEED_LOW;
+    break;
+  case FAN_SPEED_MID:
+    fan_mode = AIRTON_FAN_SPEED_MID;
+    break;
+  case FAN_SPEED_HIGH:
+    fan_mode = AIRTON_FAN_SPEED_HIGH;
+    break;
+  case FAN_SPEED_AUTO:
+  default:
+    fan_mode = AIRTON_FAN_SPEED_AUTO;
+    break;
+  }
+
+  switch(m_air_mode){
+    case MODE_COOL:
+      air_mode = AIRTON_MODE_COOL;
+      break;
+    case MODE_HEAT:
+      air_mode = AIRTON_MODE_HEAT;
+      break;
+    case MODE_DRY:
+      air_mode = AIRTON_MODE_DRY;
+      break;
+    case MODE_FAN:
+      air_mode = AIRTON_MODE_FAN;
+      break;
+    case MODE_AUTO:
+    default:
+      air_mode = AIRTON_MODE_AUTO;
+      break;
+  }
+
+  swing =  m_swing_v ? AIRTON_SWING_ON : AIRTON_SWING_OFF;
+  power_status = m_power_status ? POWER_ON : POWER_OFF;
+
+  temp = m_temperature > 32 ? 32 : temp;
+  temp = temp < 16 ? 16 : temp;
+  
   static char bytes[13], i;
   bytes[0]  = 0xC3;
-  bytes[1]  = ((m_temperature - 8) << 3) | m_swing;
+  bytes[1]  = ((temp - 8) << 3) | swing;
   bytes[2]  = 0x00;
   bytes[3]  = 0x00;
-  bytes[4]  = m_fan_mode << 5;
+  bytes[4]  = fan_mode << 5;
   bytes[5]  = 0x00;
-  bytes[6]  = m_air_mode;
+  bytes[6]  = air_mode;
   bytes[7]  = 0x00;
   bytes[8]  = 0x00;
-  bytes[9]  = m_power_status;
+  bytes[9]  = power_status;
   bytes[10] = 0x00;
   bytes[11] = 0x01;
   bytes[12] = compute_crc(bytes);
+
+  while(!ir.can_begin_send()){
+    // Don't start until we risk a clock overflow
+  }
   
   noInterrupts(); 
   send_leader();

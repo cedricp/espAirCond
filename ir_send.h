@@ -15,11 +15,12 @@ public:
   void ir_on_33(int time);
   void ir_on_100(int time);
   void ir_off(int time);
+  bool can_begin_send();
   
 private:
   unsigned m_halfPeriodCycles;
   unsigned m_periodOver3Cycles;
-  int m_gpiopin;
+  int      m_gpiopin;
 };
 
 #endif

@@ -6,7 +6,7 @@
 #include "ir_send.h"
 
 /*
- * Here I use CPU cycles count to measure time (should be more efficient than delay() method)
+ * Here I use CPU cycles count to measure time (should be more precise than delay() method)
  * @80 Mhz : 80 cycles = 1 ms (1000ns / 12.5ns)
  */
  
@@ -35,8 +35,10 @@ ir_send::set_period(int kHz)
 {
   // period in cycles
   float periodcylces = (1000.f / (float)kHz) * (float)CYCLES_USEC;
-  
+
+  // Number of CPU ticks for 50% duty cycle
   m_halfPeriodCycles = periodcylces / 2.0f;
+  // Number of CPU ticks for 100% duty cycle
   m_periodOver3Cycles = periodcylces / 3.0f;
 }
 
@@ -98,6 +100,16 @@ ir_send::set_gpio_pin(int pin)
 {
   m_gpiopin = pin;
   pinMode(pin, OUTPUT);
+}
+
+bool ir_send::can_begin_send()
+{
+  // Check if we have at least 200ms before a clock overflow
+  // 200ms * 80000 clycles (1ms = 80000 cycles)
+  if ((0xFFFFFFFF - get_ticks()) > 16000000){
+    return false;
+  }
+  return true;
 }
 
 

@@ -25,24 +25,21 @@
 // GPIO Config
 #define AIRCOND_GPIO_PIN 0
 #define DHT22_PIN 2
-
-MDNSResponder mdns;
-ESP8266WebServer server ( 80 );
-
 #define WITH_DHT 1
 
 #if WITH_DHT == 1
-
 DHT dht;
 #endif
 
-fujitsu_contol fujitsu(AIRCOND_GPIO_PIN);
-airton_control airton(AIRCOND_GPIO_PIN);
-
+// Globals
+fujitsu_contol   fujitsu(AIRCOND_GPIO_PIN);
+airton_control   airton(AIRCOND_GPIO_PIN);
+MDNSResponder    mdns;
+ESP8266WebServer server ( 80 );
 aircond_control* current_controller = NULL;
 
 void handleNotFound() {
-  String message = "File Not Found\n\n";
+  String message = "Invalid command, go away\n\n";
   message += "URI: ";
   message += server.uri();
   message += "\nMethod: ";
@@ -66,7 +63,7 @@ void handleRoot() {
       current_controller = &fujitsu;
   }
 
-  if (current_controller != NULL) {
+  if ( current_controller != NULL ) {
 
     if ( server.args() == 0 ) {
 #if WITH_DHT == 1
@@ -76,7 +73,7 @@ void handleRoot() {
 #else
       float temp = 0.;
       float hum  = 0.;
-      const char* sts = "Not installed";
+      const char* sts = "DHT module not installed";
 #endif
       server.send(200, "text/plain", current_controller->get_as_json(temp, hum, sts));
       return;
@@ -126,13 +123,17 @@ void handleRoot() {
     if ( server.hasArg("swing") ) {
       String mode = server.arg("swing");
       if (mode == "h")
-        current_controller->set_swing(true, false);
+        current_controller->set_swing_h(true);
+        current_controller->set_swing_v(false);
       if (mode == "v")
-        current_controller->set_swing(false, true);
+        current_controller->set_swing_v(true);
+        current_controller->set_swing_h(false);
       if (mode == "hv")
-        current_controller->set_swing(true, true);
+        current_controller->set_swing_h(true);
+        current_controller->set_swing_v(true);
       if (mode == "off")
-        current_controller->set_swing(false, false);
+        current_controller->set_swing_h(false);
+        current_controller->set_swing_v(false);
     }
     
     if ( server.hasArg("power") ) {

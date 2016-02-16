@@ -12,11 +12,6 @@ public:
   virtual void send_data();
   virtual void poweron();
   virtual void poweroff();
-  virtual void set_power(bool on); 
-  virtual bool set_temperature(int temp);
-  virtual bool set_ac_mode(ac_mode mode);
-  virtual bool set_fan_mode(fan_mode mode);
-  virtual bool set_swing(bool horizontal, bool vertical);
 
 private:
   void send_leader();

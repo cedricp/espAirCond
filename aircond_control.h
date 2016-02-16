@@ -29,12 +29,14 @@ public:
   virtual void send_data() = 0;
   virtual void poweroff() = 0;
   virtual void poweron() = 0; 
-  virtual void set_power(bool on) = 0; 
-  virtual bool set_temperature(int temp) = 0;
-  virtual bool set_ac_mode(ac_mode mode) = 0;
-  virtual bool set_swing(bool horizontal, bool vertical) = 0;
-  virtual bool set_fan_mode(fan_mode mode) = 0;
+  void set_power(bool state){m_power_status = state;} 
+  void set_temperature(int temp){m_temperature = temp;}
+  void set_ac_mode(ac_mode mode){m_air_mode = mode;}
+  void set_swing_v(bool state){m_swing_v = state;}
+  void set_swing_h(bool state){m_swing_h = state;}
+  void set_fan_mode(fan_mode mode){m_fan_mode = mode;}
   String get_as_json(float curr_temp, float curr_hum, const char* status);
+
 protected:
   ir_send ir;
   char m_temperature;
@@ -42,7 +44,7 @@ protected:
   char m_air_mode;
   char m_fan_mode;
   char m_adress;
-  char m_swing;
+  char m_swing_v, m_swing_h;
 };
 
 #endif
