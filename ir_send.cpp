@@ -112,7 +112,7 @@ bool ir_send::can_begin_send()
 {
   // Check if we have at least 200ms before a clock overflow
   // 200ms * 80000 clycles (1ms = 80000 cycles)
-  if ((0xFFFFFFFF - get_ticks()) > 16000000){
+  if (((unsigned)0xFFFFFFFF - get_ticks()) < (unsigned)16000000){
     return false;
   }
   return true;

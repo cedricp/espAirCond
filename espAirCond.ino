@@ -20,14 +20,13 @@
  * prog_char password[]  PROGMEM = "your_password";
  */
 
-#define WITH_DHT 1
+#define WITH_DHT 0
 
 // GPIO Config
 #define AIRCOND_GPIO_LED_PIN 0
 #define AIRCOND_GPIO_LED_OPEN_DRAIN false
 #define DHT22_PIN 2
 // Are we using DHT module ?
-#define WITH_DHT 1
 
 #if WITH_DHT == 1
 DHT dht;
@@ -162,7 +161,7 @@ void handleRoot() {
 
 }
 
-void setup_wifi(){
+void setup() {
   WiFi.begin ( ssid, password );
   while ( WiFi.status() != WL_CONNECTED ) {
     delay(500);
@@ -173,10 +172,6 @@ void setup_wifi(){
   server.on ( "/control", handleRoot );
   server.onNotFound(handleNotFound);
   server.begin();
-}
-
-void setup() {
-  setup_wifi();
 
 #if WITH_DHT == 1
   dht.setup(DHT22_PIN, DHT::DHT22);
@@ -185,8 +180,8 @@ void setup() {
 
 void loop() {
   // Check if wifi is up and running, else try to reconnect
-  if (WiFi.status() != WL_CONNECTED)
-    setup_wifi();
+//  if (WiFi.status() != WL_CONNECTED)
+//    setup_wifi();
     
   mdns.update();
   server.handleClient();

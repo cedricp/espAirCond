@@ -165,7 +165,7 @@ airton_control::send_data()
   swing =  m_swing_v ? AIRTON_SWING_ON : AIRTON_SWING_OFF;
   power_status = m_power_status ? POWER_ON : POWER_OFF;
 
-  temp = m_temperature > 32 ? 32 : temp;
+  temp = m_temperature > 32 ? 32 : m_temperature;
   temp = temp < 16 ? 16 : temp;
   
   static char bytes[13], i;

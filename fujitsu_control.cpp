@@ -36,26 +36,26 @@ fujitsu_contol::~fujitsu_contol()
 
 void fujitsu_contol::send_leader()
 {
-  ir.ir_on(5500);
-  ir.ir_off(1440);
+  ir.ir_on_33(3280);
+  ir.ir_off(1640);
 }
 
 void fujitsu_contol::send_trailer()
 {
-  ir.ir_on(580);
+  ir.ir_on_33(410);
   ir.ir_off(800);
-}
-
-void fujitsu_contol::send_bit_one()
-{
-  ir.ir_on(580);
-  ir.ir_off(200);
 }
 
 void fujitsu_contol::send_bit_zero()
 {
-  ir.ir_on(580);
-  ir.ir_off(1060);
+  ir.ir_on_33(410);
+  ir.ir_off(410);
+}
+
+void fujitsu_contol::send_bit_one()
+{
+  ir.ir_on_33(410);
+  ir.ir_off(1230);
 }
 
 void
@@ -126,14 +126,14 @@ fujitsu_contol::send_data()
       break;
   }
 
-  temp = m_temperature > 31 ? 31 : temp;
+  temp = m_temperature > 31 ? 31 : m_temperature;
   temp = temp < 16 ? 16 : temp;
   
   char bytes[16], i;
   bytes[0] = 0x14;
   bytes[1] = 0x63;
   bytes[2] = 0x00;
-  bytes[3] = 0x00;
+  bytes[3] = 0x10;
   bytes[4] = 0x10;
   bytes[5] = 0xFE;
   bytes[6] = 0x09;
@@ -173,7 +173,7 @@ fujitsu_contol::poweroff()
   bytes[0] = 0x14;
   bytes[1] = 0x63;
   bytes[2] = 0x00;
-  bytes[3] = 0x00;
+  bytes[3] = 0x10;
   bytes[4] = 0x10;
   bytes[5] = 0x02;
   bytes[6] = 0xFD;
