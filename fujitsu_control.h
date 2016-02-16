@@ -6,7 +6,7 @@
 class fujitsu_contol : public aircond_control
 {
 public:
-  fujitsu_contol(int ir_pin);
+  fujitsu_contol(int ir_pin, bool opendrain);
   ~fujitsu_contol();
 
   virtual void send_data();

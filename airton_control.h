@@ -6,7 +6,7 @@
 class airton_control : public aircond_control
 {
 public:
-  airton_control(int ir_pin);
+  airton_control(int ir_pin, bool opendrain);
   ~airton_control();
   
   virtual void send_data();

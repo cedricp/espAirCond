@@ -46,7 +46,7 @@
 #define POWER_ON  0x20
 #define POWER_OFF 0x00 
 
-airton_control::airton_control(int ir_pin) : aircond_control(ir_pin)
+airton_control::airton_control(int ir_pin, bool open_drain) : aircond_control(ir_pin, open_drain)
 {
   ir.set_period(38);
   

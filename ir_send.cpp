@@ -96,10 +96,16 @@ ir_send::ir_off(int time)
 }
 
 void
-ir_send::set_gpio_pin(int pin)
+ir_send::set_gpio_pin(int pin, bool open_drain)
 {
   m_gpiopin = pin;
-  pinMode(pin, OUTPUT);
+  if (open_drain)
+    pinMode(pin, OUTPUT_OPEN_DRAIN);
+  else
+    pinMode(pin, OUTPUT);
+
+  // Be sure the IR led is not lit
+  digitalWrite(m_gpiopin, LOW);
 }
 
 bool ir_send::can_begin_send()

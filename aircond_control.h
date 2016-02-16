@@ -23,7 +23,7 @@ enum ac_mode{
 class aircond_control
 {
 public:
-  aircond_control(int ir_pin){ir.set_gpio_pin(ir_pin);}
+  aircond_control(int ir_pin, bool open_drain){ir.set_gpio_pin(ir_pin, open_drain);}
   virtual ~aircond_control(){};
 
   virtual void send_data() = 0;

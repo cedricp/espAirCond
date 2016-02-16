@@ -27,7 +27,7 @@
 // Time base unit for IR coding in microseconds
 #define UNIT_TIME 412
 
-fujitsu_contol::fujitsu_contol(int ir_pin) : aircond_control(ir_pin)
+fujitsu_contol::fujitsu_contol(int ir_pin, bool open_drain) : aircond_control(ir_pin, open_drain)
 {
   ir.set_period(38);
   

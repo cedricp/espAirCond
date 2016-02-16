@@ -23,8 +23,10 @@
 #define WITH_DHT 1
 
 // GPIO Config
-#define AIRCOND_GPIO_PIN 0
+#define AIRCOND_GPIO_LED_PIN 0
+#define AIRCOND_GPIO_LED_OPEN_DRAIN false
 #define DHT22_PIN 2
+// Are we using DHT module ?
 #define WITH_DHT 1
 
 #if WITH_DHT == 1
@@ -32,8 +34,8 @@ DHT dht;
 #endif
 
 // Globals
-fujitsu_contol   fujitsu(AIRCOND_GPIO_PIN);
-airton_control   airton(AIRCOND_GPIO_PIN);
+fujitsu_contol   fujitsu(AIRCOND_GPIO_LED_PIN, AIRCOND_GPIO_LED_OPEN_DRAIN);
+airton_control   airton(AIRCOND_GPIO_LED_PIN, AIRCOND_GPIO_LED_OPEN_DRAIN);
 MDNSResponder    mdns;
 ESP8266WebServer server ( 80 );
 aircond_control* current_controller = NULL;
@@ -160,25 +162,32 @@ void handleRoot() {
 
 }
 
-void setup() {
+void setup_wifi(){
   WiFi.begin ( ssid, password );
   while ( WiFi.status() != WL_CONNECTED ) {
     delay(500);
   }
-
-  if ( mdns.begin ( "esp_ac", WiFi.localIP() ) ) {
-
-  }
+  
+  mdns.begin ( "esp_ac", WiFi.localIP() );
 
   server.on ( "/control", handleRoot );
   server.onNotFound(handleNotFound);
   server.begin();
+}
+
+void setup() {
+  setup_wifi();
+
 #if WITH_DHT == 1
   dht.setup(DHT22_PIN, DHT::DHT22);
 #endif
 }
 
 void loop() {
+  // Check if wifi is up and running, else try to reconnect
+  if (WiFi.status() != WL_CONNECTED)
+    setup_wifi();
+    
   mdns.update();
   server.handleClient();
   delay(50);
