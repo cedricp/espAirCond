@@ -57,7 +57,7 @@ String fan_to_string(char fanmode){
 }
 
 String
-aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* status)
+aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* status, unsigned reconnect)
 {
   String json = "{\n";
   json += "\"ac_temperature\" : " + String(m_temperature) + "\n";
@@ -67,6 +67,8 @@ aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* s
   json += "\"temperature\" :" + String(curr_temp) + "\n";
   json += "\"humidity\" : " + String(curr_humidity) + "\n";
   json += "\"DHTstatus\" : " + String(status) + "\n";
+  json += "\"TimeSinceBoot\" : " + String(millis()) + "\n";
+  json += "\"WifiReconnect\" : " + String(reconnect) + "\n";
   json += "}\n";
   
   return json;

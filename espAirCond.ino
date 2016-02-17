@@ -38,6 +38,7 @@ airton_control   airton(AIRCOND_GPIO_LED_PIN, AIRCOND_GPIO_LED_OPEN_DRAIN);
 MDNSResponder    mdns;
 ESP8266WebServer server ( 80 );
 aircond_control* current_controller = NULL;
+unsigned reconnect_count;
 
 void handleNotFound() {
   String message = "Invalid command, go away\n\n";
@@ -66,7 +67,7 @@ void handleRoot() {
 
   if ( current_controller != NULL ) {
 
-    if ( server.args() == 0 ) {
+    if ( server.args() == 1 ) {
 #if WITH_DHT == 1
       float temp = dht.getTemperature();
       float hum  = dht.getHumidity();
@@ -76,7 +77,7 @@ void handleRoot() {
       float hum  = 0.;
       const char* sts = "DHT module not installed";
 #endif
-      server.send(200, "text/plain", current_controller->get_as_json(temp, hum, sts));
+      server.send(200, "text/plain", current_controller->get_as_json(temp, hum, sts, reconnect_count));
       return;
     }
 
@@ -161,14 +162,21 @@ void handleRoot() {
 
 }
 
-void setup() {
+void setup_wifi()
+{
   WiFi.begin ( ssid, password );
   while ( WiFi.status() != WL_CONNECTED ) {
     delay(500);
   }
   
   mdns.begin ( "esp_ac", WiFi.localIP() );
+}
 
+void setup() {
+  reconnect_count = 0;
+  
+  setup_wifi();
+  
   server.on ( "/control", handleRoot );
   server.onNotFound(handleNotFound);
   server.begin();
@@ -179,12 +187,13 @@ void setup() {
 }
 
 void loop() {
-  // Check if wifi is up and running, else try to reconnect
-//  if (WiFi.status() != WL_CONNECTED)
-//    setup_wifi();
+  if ( WiFi.status() != WL_CONNECTED ) {
+    setup_wifi();
+    reconnect_count++;
+    return;
+  }
     
   mdns.update();
   server.handleClient();
-  delay(50);
 }
 

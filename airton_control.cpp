@@ -28,6 +28,7 @@
 
   
 #include "airton_control.h"
+#include <Arduino.h>
 
 #define AIRTON_MODE_HEAT 0x80
 #define AIRTON_MODE_COOL 0x30
