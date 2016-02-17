@@ -99,10 +99,6 @@ void handleRoot() {
         current_controller->set_ac_mode(MODE_FAN);
       else if (mode == "dry")
         current_controller->set_ac_mode(MODE_DRY);
-      else {
-        server.send(200, "text/plain", "Argument 'mode' error");
-        return;
-      }
     }
 
     if ( server.hasArg("fan") ) {
@@ -117,10 +113,6 @@ void handleRoot() {
         current_controller->set_fan_mode(FAN_SPEED_HIGH);
       else if (fan == "quiet")
         current_controller->set_fan_mode(FAN_SPEED_QUIET);
-      else{
-        server.send(200, "text/plain", "Argument 'fan' error");
-        return;
-      }
     }
 
     if ( server.hasArg("swing") ) {
@@ -143,26 +135,28 @@ void handleRoot() {
       String power = server.arg("power");
       if (power == "on"){
         current_controller->poweron();
-        server.send(200, "text/plain", "OK");
         goto END;
       }
       if (power == "off"){
         current_controller->poweroff();
-        server.send(200, "text/plain", "OK");
         goto END;
       }      
     }
     
     current_controller->send_data();
-    server.send(200, "text/plain", "OK");
     
   } else {
     String message = "You must define a valid aircond model\n\n";
     server.send(200, "text/plain", message);
+    return;
   }
 
 END:
-  current_controller->save_to_eeprom();
+  bool crc_ok = current_controller->save_to_eeprom();
+  if (crc_k)
+    server.send(200, "text/plain", "OK");
+  else
+    server.send(200, "text/plain", "OK-CRCBAD");
   return;
 }
 

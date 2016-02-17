@@ -35,7 +35,7 @@ public:
   void set_swing_h(bool state){m_swing_h = state;}
   void set_fan_mode(fan_mode mode){m_fan_mode = mode;}
   String get_as_json(float curr_temp, float curr_hum, const char* status, unsigned reconnect);
-  void restore_from_eeprom();
+  bool restore_from_eeprom();
   void save_to_eeprom();
 
 protected:
@@ -49,6 +49,7 @@ protected:
   char m_fan_mode;
   char m_adress;
   char m_swing_v, m_swing_h;
+  char crc;
 };
 
 #endif

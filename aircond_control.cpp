@@ -8,6 +8,8 @@ aircond_control::aircond_control(int ir_pin, bool open_drain)
   m_air_mode     = MODE_HEAT;
   m_fan_mode     = FAN_SPEED_AUTO;
   m_power_status = 0;
+  m_swing_v      = false;
+  m_swing_h      = false;
 }
 
 String ac_to_string(char airmode){
@@ -75,24 +77,38 @@ aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* s
   return json;
 }
 
-void aircond_control::restore_from_eeprom()
+bool aircond_control::restore_from_eeprom()
 {
-  unsigned start = m_id * 7;
+  unsigned start = m_id * 8;
   char* data = &m_temperature;
-  for (int i = 0; i < 7; ++i){
-    EEPROM.write(i+start, *data);
+  char crc, crccheck;
+  int i;
+  for (i = 0; i < 7; ++i){
+    *data = char(EEPROM.read(i+start));
+    crc += *data;
     data++;
   }
+  
+  crccheck = char(EEPROM.read(i+start));
+  
+  if (crccheck != crc)
+    return false;
+  return true;
 }
 
 void aircond_control::save_to_eeprom()
 {
-  unsigned start = m_id * 7;
+   unsigned start = m_id * 8;
   char* data = &m_temperature;
-  for (int i = 0; i < 7; ++i){
-    *data = char(EEPROM.read(i+start));
+  char crc = 0x00;
+  int i;
+  for (i = 0; i < 7; ++i){
+    EEPROM.write(i+start, *data);
+    crc += *data;
     data++;
   }
+  EEPROM.write(i+start, crc);
+
   EEPROM.commit();
 }
 
