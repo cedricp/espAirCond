@@ -111,7 +111,7 @@ ir_send::set_gpio_pin(int pin, bool open_drain)
 bool ir_send::can_begin_send()
 {
   // As we have no overflow interrupt for ESP8266's ccount register,
-  // Check if we have at least 200ms before a clock overflow
+  // Check if we have at least 200ms before a clock overflow (every ~52 seconds @ 80Mhz)
   // 200ms * 80000 clycles (1ms = 80000 cycles)
   if (((unsigned)0xFFFFFFFF - get_ticks()) < (unsigned)16000000){
     return false;

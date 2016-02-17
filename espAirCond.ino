@@ -5,7 +5,6 @@
 */
 
 #include <ESP8266WiFi.h>
-//#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <EEPROM.h>
@@ -21,7 +20,7 @@
  * prog_char password[]  PROGMEM = "your_password";
  */
 
-#define WITH_DHT 0
+#define WITH_DHT 1
 
 // GPIO Config
 #define AIRCOND_GPIO_LED_PIN 0

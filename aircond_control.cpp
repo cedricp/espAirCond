@@ -75,9 +75,9 @@ aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* s
   json += "\"ac_mode\" : '" + ac_to_string(m_air_mode) + "'\n";
   json += "\"temperature\" : " + String(curr_temp) + "\n";
   json += "\"humidity\" : " + String(curr_humidity) + "\n";
-  json += "\"DHTstatus\" : '" + String(status) + "'\n";
-  json += "\"TimeSinceBoot\" : " + String(millis()/1000) + "\n";
-  json += "\"WifiReconnect\" : " + String(reconnect) + "\n";
+  json += "\"dht_status\" : '" + String(status) + "'\n";
+  json += "\"time_since_boot\" : " + String(millis()/1000) + "\n";
+  json += "\"wifi_reconnect\" : " + String(reconnect) + "\n";
   json += "}\n";
   
   return json;
