@@ -4,6 +4,12 @@
 aircond_control::aircond_control(int ir_pin, bool open_drain)
 {
   ir.set_gpio_pin(ir_pin, open_drain);
+  init();
+}
+
+void
+aircond_control::init()
+{
   m_temperature  = 20;
   m_air_mode     = MODE_HEAT;
   m_fan_mode     = FAN_SPEED_AUTO;
@@ -63,13 +69,13 @@ String
 aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* status, unsigned reconnect)
 {
   String json = "{\n";
-  json += "\"ac_temperature\" : " + String(m_temperature) + "\n";
-  json += "\"ac_power_state\" :" + power_to_string(m_power_status) + "\n";
-  json += "\"ac_fan_mode\" :" + fan_to_string(m_fan_mode) + "\n";
-  json += "\"ac_mode\":" + ac_to_string(m_air_mode) + "\n";
-  json += "\"temperature\" :" + String(curr_temp) + "\n";
+  json += "\"ac_temperature\" : " + String((int)m_temperature) + "\n";
+  json += "\"ac_power_state\" : '" + power_to_string(m_power_status) + "'\n";
+  json += "\"ac_fan_mode\" : '" + fan_to_string(m_fan_mode) + "'\n";
+  json += "\"ac_mode\" : '" + ac_to_string(m_air_mode) + "'\n";
+  json += "\"temperature\" : " + String(curr_temp) + "\n";
   json += "\"humidity\" : " + String(curr_humidity) + "\n";
-  json += "\"DHTstatus\" : " + String(status) + "\n";
+  json += "\"DHTstatus\" : '" + String(status) + "'\n";
   json += "\"TimeSinceBoot\" : " + String(millis()/1000) + "\n";
   json += "\"WifiReconnect\" : " + String(reconnect) + "\n";
   json += "}\n";
@@ -81,7 +87,7 @@ bool aircond_control::restore_from_eeprom()
 {
   unsigned start = m_id * 8;
   char* data = &m_temperature;
-  char crc, crccheck;
+  char crc = 0, crccheck = 0;
   int i;
   for (i = 0; i < 7; ++i){
     *data = char(EEPROM.read(i+start));
@@ -98,7 +104,7 @@ bool aircond_control::restore_from_eeprom()
 
 void aircond_control::save_to_eeprom()
 {
-   unsigned start = m_id * 8;
+  unsigned start = m_id * 8;
   char* data = &m_temperature;
   char crc = 0x00;
   int i;

@@ -99,6 +99,10 @@ void handleRoot() {
         current_controller->set_ac_mode(MODE_FAN);
       else if (mode == "dry")
         current_controller->set_ac_mode(MODE_DRY);
+      else if (mode == "init"){
+        current_controller->init();
+        goto END;
+      }
     }
 
     if ( server.hasArg("fan") ) {
@@ -152,11 +156,8 @@ void handleRoot() {
   }
 
 END:
-  bool crc_ok = current_controller->save_to_eeprom();
-  if (crc_k)
-    server.send(200, "text/plain", "OK");
-  else
-    server.send(200, "text/plain", "OK-CRCBAD");
+  current_controller->save_to_eeprom();
+  server.send(200, "text/plain", "OK");
   return;
 }
 
@@ -184,8 +185,11 @@ void setup() {
   dht.setup(DHT22_PIN, DHT::DHT22);
 #endif
 
-  fujitsu.restore_from_eeprom();
-  airton.restore_from_eeprom();
+  bool ok;
+  ok = fujitsu.restore_from_eeprom();
+  if (!ok) fujitsu.init();
+  ok = airton.restore_from_eeprom();
+  if (!ok) airton.init();
 }
 
 void loop() {

@@ -37,6 +37,7 @@ public:
   String get_as_json(float curr_temp, float curr_hum, const char* status, unsigned reconnect);
   bool restore_from_eeprom();
   void save_to_eeprom();
+  void init();
 
 protected:
   ir_send ir;
