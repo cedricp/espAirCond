@@ -8,6 +8,7 @@
 //#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <EEPROM.h>
 
 #include "airton_control.h"
 #include "fujitsu_control.h"
@@ -33,7 +34,7 @@ DHT dht;
 #endif
 
 // Globals
-fujitsu_contol   fujitsu(AIRCOND_GPIO_LED_PIN, AIRCOND_GPIO_LED_OPEN_DRAIN);
+fujitsu_control  fujitsu(AIRCOND_GPIO_LED_PIN, AIRCOND_GPIO_LED_OPEN_DRAIN);
 airton_control   airton(AIRCOND_GPIO_LED_PIN, AIRCOND_GPIO_LED_OPEN_DRAIN);
 MDNSResponder    mdns;
 ESP8266WebServer server ( 80 );
@@ -143,12 +144,12 @@ void handleRoot() {
       if (power == "on"){
         current_controller->poweron();
         server.send(200, "text/plain", "OK");
-        return;
+        goto END;
       }
       if (power == "off"){
         current_controller->poweroff();
         server.send(200, "text/plain", "OK");
-        return;
+        goto END;
       }      
     }
     
@@ -160,6 +161,9 @@ void handleRoot() {
     server.send(200, "text/plain", message);
   }
 
+END:
+  current_controller->save_to_eeprom();
+  return;
 }
 
 void setup_wifi()
@@ -174,6 +178,7 @@ void setup_wifi()
 
 void setup() {
   reconnect_count = 0;
+  EEPROM.begin(512);
   
   setup_wifi();
   
@@ -184,6 +189,9 @@ void setup() {
 #if WITH_DHT == 1
   dht.setup(DHT22_PIN, DHT::DHT22);
 #endif
+
+  fujitsu.restore_from_eeprom();
+  airton.restore_from_eeprom();
 }
 
 void loop() {

@@ -24,42 +24,47 @@
 #define SWING_HORZONTAL 0x02
 #define SWING_BOTH      0x03
 
-fujitsu_contol::fujitsu_contol(int ir_pin, bool open_drain) : aircond_control(ir_pin, open_drain)
+fujitsu_control::fujitsu_control(int ir_pin, bool open_drain) : aircond_control(ir_pin, open_drain)
 {
   ir.set_period(38);
+  m_id = 0;
 }
 
-fujitsu_contol::~fujitsu_contol()
+fujitsu_control::~fujitsu_control()
 {
 
 }
 
-void fujitsu_contol::send_leader()
+void
+fujitsu_control::send_leader()
 {
   ir.ir_on_33(3280);
   ir.ir_off(1640);
 }
 
-void fujitsu_contol::send_trailer()
+void
+fujitsu_control::send_trailer()
 {
   ir.ir_on_33(410);
   ir.ir_off(800);
 }
 
-void fujitsu_contol::send_bit_zero()
+void
+fujitsu_control::send_bit_zero()
 {
   ir.ir_on_33(410);
   ir.ir_off(410);
 }
 
-void fujitsu_contol::send_bit_one()
+void
+fujitsu_control::send_bit_one()
 {
   ir.ir_on_33(410);
   ir.ir_off(1230);
 }
 
 void
-fujitsu_contol::send_byte(char b)
+fujitsu_control::send_byte(char b)
 {
   int i;
   for (i = 0; i < 8; ++i) {
@@ -73,7 +78,7 @@ fujitsu_contol::send_byte(char b)
 }
 
 char
-fujitsu_contol::compute_crc(char *bytes)
+fujitsu_control::compute_crc(char *bytes)
 {
   int i;
   int sum = 0;
@@ -84,7 +89,7 @@ fujitsu_contol::compute_crc(char *bytes)
 }
 
 void
-fujitsu_contol::send_data()
+fujitsu_control::send_data()
 {
   int swing, air_mode, fan_mode, temp;
   swing =  m_swing_h ? 0x02 : 0x00;
@@ -126,6 +131,7 @@ fujitsu_contol::send_data()
       break;
   }
 
+  // Clamp to airconditioner limit
   temp = m_temperature > 31 ? 31 : m_temperature;
   temp = temp < 16 ? 16 : temp;
   
@@ -165,7 +171,7 @@ fujitsu_contol::send_data()
 }
 
 void
-fujitsu_contol::poweroff()
+fujitsu_control::poweroff()
 {
   set_power(false);
   m_powermem = false;
@@ -188,7 +194,7 @@ fujitsu_contol::poweroff()
 }
 
 void
-fujitsu_contol::poweron()
+fujitsu_control::poweron()
 {
   set_power(true);
   m_powermem = true;

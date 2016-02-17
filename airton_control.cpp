@@ -50,6 +50,7 @@
 airton_control::airton_control(int ir_pin, bool open_drain) : aircond_control(ir_pin, open_drain)
 {
   ir.set_period(38);
+  m_id = 1;
 }
 
 airton_control::~airton_control()
@@ -163,6 +164,7 @@ airton_control::send_data()
       break;
   }
 
+  // Clamp to airconditioner limit
   swing =  m_swing_v ? AIRTON_SWING_ON : AIRTON_SWING_OFF;
   power_status = m_power_status ? POWER_ON : POWER_OFF;
 

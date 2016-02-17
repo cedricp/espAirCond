@@ -35,9 +35,14 @@ public:
   void set_swing_h(bool state){m_swing_h = state;}
   void set_fan_mode(fan_mode mode){m_fan_mode = mode;}
   String get_as_json(float curr_temp, float curr_hum, const char* status, unsigned reconnect);
+  void restore_from_eeprom();
+  void save_to_eeprom();
 
 protected:
   ir_send ir;
+
+  char m_id;
+  // From here, don't change anything or modify restore_from_eeprom() & save_to_eeprom()
   char m_temperature;
   char m_power_status;
   char m_air_mode;

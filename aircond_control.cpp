@@ -1,4 +1,5 @@
 #include "aircond_control.h"
+#include <EEPROM.h>
 
 aircond_control::aircond_control(int ir_pin, bool open_drain)
 {
@@ -67,10 +68,31 @@ aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* s
   json += "\"temperature\" :" + String(curr_temp) + "\n";
   json += "\"humidity\" : " + String(curr_humidity) + "\n";
   json += "\"DHTstatus\" : " + String(status) + "\n";
-  json += "\"TimeSinceBoot\" : " + String(millis()) + "\n";
+  json += "\"TimeSinceBoot\" : " + String(millis()/1000) + "\n";
   json += "\"WifiReconnect\" : " + String(reconnect) + "\n";
   json += "}\n";
   
   return json;
+}
+
+void aircond_control::restore_from_eeprom()
+{
+  unsigned start = m_id * 7;
+  char* data = &m_temperature;
+  for (int i = 0; i < 7; ++i){
+    EEPROM.write(i+start, *data);
+    data++;
+  }
+}
+
+void aircond_control::save_to_eeprom()
+{
+  unsigned start = m_id * 7;
+  char* data = &m_temperature;
+  for (int i = 0; i < 7; ++i){
+    *data = char(EEPROM.read(i+start));
+    data++;
+  }
+  EEPROM.commit();
 }
 

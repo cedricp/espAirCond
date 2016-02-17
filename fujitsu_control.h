@@ -3,11 +3,11 @@
 
 #include "aircond_control.h"
 
-class fujitsu_contol : public aircond_control
+class fujitsu_control : public aircond_control
 {
 public:
-  fujitsu_contol(int ir_pin, bool opendrain);
-  ~fujitsu_contol();
+  fujitsu_control(int ir_pin, bool opendrain);
+  ~fujitsu_control();
 
   virtual void send_data();
   virtual void poweroff();
