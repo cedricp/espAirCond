@@ -36,11 +36,13 @@ void DHT::setup(uint8_t pin, DHT_MODEL_t model)
   if ( model == AUTO_DETECT) {
     DHT::model = DHT22;
     readSensor();
+    
     if ( error == ERROR_TIMEOUT ) {
       DHT::model = DHT11;
       // Warning: in case we auto detect a DHT11, you should wait at least 1000 msec
       // before your first read request. Otherwise you will get a time out error.
     }
+    
   }
 }
 
@@ -61,24 +63,6 @@ float DHT::getTemperature()
   return temperature;
 }
 
-#ifndef OPTIMIZE_SRAM_SIZE
-
-const char* DHT::getStatusString()
-{
-  switch ( error ) {
-    case DHT::ERROR_TIMEOUT:
-      return "TIMEOUT";
-
-    case DHT::ERROR_CHECKSUM:
-      return "CHECKSUM";
-
-    default:
-      return "OK";
-  }
-}
-
-#else
-
 // At the expense of 26 bytes of extra PROGMEM, we save 11 bytes of
 // SRAM by using the following method:
 
@@ -90,13 +74,14 @@ const char *DHT::getStatusString() {
   prog_char *c;
   switch ( error ) {
     case DHT::ERROR_CHECKSUM:
-      c = P_CHECKSUM; break;
-
+      c = P_CHECKSUM;
+      break;
     case DHT::ERROR_TIMEOUT:
-      c = P_TIMEOUT; break;
-
+      c = P_TIMEOUT;
+      break;
     default:
-      c = P_OK; break;
+      c = P_OK;
+      break;
   }
 
   static char buffer[9];
@@ -104,8 +89,6 @@ const char *DHT::getStatusString() {
 
   return buffer;
 }
-
-#endif
 
 uint32_t DHT::detectState(bool state)
 {
@@ -146,6 +129,7 @@ void DHT::readSensor()
   
   digitalWrite(pin, HIGH); // Switch bus to receive data
   delayMicroseconds(40); 
+  
   pinMode(pin, INPUT_PULLUP);
   delayMicroseconds(10);    
   
@@ -172,16 +156,13 @@ void DHT::readSensor()
   
   interrupts();
   
-  
-  
-  
   uint8_t data[5];
   
-  data[0] = data[1] = data[2] = data[3] = data[4] = 0;
+  data[0] = data[1] = data[2] = data[3] = data[4] = 0x0;
    
-  for (int i=0; i<40; ++i) {
+  for (uint32_t i=0; i<40; ++i) {
     uint32_t lowCnt  = cnt[2*i];
-      uint32_t highCnt = cnt[2*i+1];
+    uint32_t highCnt = cnt[2*i+1];
     
     if ((lowCnt == 0) || (highCnt == 0))
     {
@@ -189,14 +170,14 @@ void DHT::readSensor()
       return;   
     }
       
-    data[i/8] <<= 1;
+    data[i>>3] <<= 1;
     if (highCnt > lowCnt) 
-      data[i/8] |= 1; 
+      data[i>>3] |= 1; 
   }
   
   if (data[4] != ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) {
-  error = ERROR_CHECKSUM;
-  return;
+    error = ERROR_CHECKSUM;
+    return;
   }
     
   // We're going to read 83 edges:
@@ -207,8 +188,8 @@ void DHT::readSensor()
   word rawHumidity;
   word rawTemperature;
   
-  rawHumidity = data[0] * 0xFF + data[1] ;
-  rawTemperature = data[2] * 0xFF + data[3] ;
+  rawHumidity     = data[0] * 0xFF + data[1] ;
+  rawTemperature  = data[2] * 0xFF + data[3] ;
  
   // Store readings
   if ( model == DHT11 ) {
@@ -221,7 +202,7 @@ void DHT::readSensor()
     if ( rawTemperature & 0x8000 ) {
       rawTemperature = -(int16_t)(rawTemperature & 0x7FFF);
     }
-    temperature = ((int16_t)rawTemperature) * 0.1;
+    temperature = ((int16_t)rawTemperature) * 0.1f;
   }
 
   error = ERROR_NONE;
