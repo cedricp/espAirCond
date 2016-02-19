@@ -69,15 +69,15 @@ String
 aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* status, unsigned reconnect)
 {
   String json = "{\n";
-  json += "\"ac_temperature\" : " + String((int)m_temperature) + "\n";
-  json += "\"ac_power_state\" : '" + power_to_string(m_power_status) + "'\n";
-  json += "\"ac_fan_mode\" : '" + fan_to_string(m_fan_mode) + "'\n";
-  json += "\"ac_mode\" : '" + ac_to_string(m_air_mode) + "'\n";
-  json += "\"temperature\" : " + String(curr_temp) + "\n";
-  json += "\"humidity\" : " + String(curr_humidity) + "\n";
-  json += "\"dht_status\" : '" + String(status) + "'\n";
-  json += "\"time_since_boot\" : " + String(millis()/1000) + "\n";
-  json += "\"wifi_reconnect\" : " + String(reconnect) + "\n";
+  json += "\"ac_temperature\" : '" + String((int)m_temperature) + "',\n";
+  json += "\"ac_power_state\" : '" + power_to_string(m_power_status) + "',\n";
+  json += "\"ac_fan_mode\" : '" + fan_to_string(m_fan_mode) + "',\n";
+  json += "\"ac_mode\" : '" + ac_to_string(m_air_mode) + "',\n";
+  json += "\"temperature\" : '" + String(curr_temp) + "',\n";
+  json += "\"humidity\" : '" + String(curr_humidity) + "',\n";
+  json += "\"dht_status\" : '" + String(status) + "',\n";
+  json += "\"time_since_boot\" : '" + String(millis()/1000) + "',\n";
+  json += "\"wifi_reconnect\" : '" + String(reconnect) + "'\n";
   json += "}\n";
   
   return json;
