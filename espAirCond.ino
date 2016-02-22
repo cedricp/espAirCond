@@ -145,8 +145,9 @@ void handleRoot() {
         goto END;
       }      
     }
-    
-    current_controller->send_data();
+
+    if (current_controller->is_on())
+      current_controller->send_data();
     
   } else {
     String message = "You must define a valid aircond model\n\n";

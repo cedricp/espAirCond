@@ -78,6 +78,7 @@ aircond_control::get_as_json(float curr_temp, float curr_humidity, const char* s
   json += "\"dht_status\" : '" + String(status) + "',\n";
   json += "\"time_since_boot\" : '" + String(millis()/1000) + "',\n";
   json += "\"wifi_reconnect\" : '" + String(reconnect) + "'\n";
+  json += "\"free_ram\" : '" + String(ESP.getFreeHeap()) + "'\n";
   json += "}\n";
   
   return json;

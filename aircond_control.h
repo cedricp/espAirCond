@@ -38,6 +38,7 @@ public:
   bool restore_from_eeprom();
   void save_to_eeprom();
   void init();
+  bool is_on(){return m_power_status != 0;}
 
 protected:
   ir_send ir;
