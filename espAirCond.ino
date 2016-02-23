@@ -23,7 +23,7 @@
 #define WITH_DHT 1
 
 // GPIO Config
-#define AIRCOND_GPIO_LED_PIN 0
+#define AIRCOND_GPIO_LED_PIN 3
 #define AIRCOND_GPIO_LED_OPEN_DRAIN false
 #define DHT22_PIN 2
 // Are we using DHT module ?
@@ -184,6 +184,8 @@ void setup() {
 #if WITH_DHT == 1
   dht.setup(DHT22_PIN, DHT::DHT22);
 #endif
+
+
 
   bool ok;
   ok = fujitsu.restore_from_eeprom();
